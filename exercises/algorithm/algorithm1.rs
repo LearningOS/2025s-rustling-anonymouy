@@ -2,7 +2,7 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
+
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -29,13 +29,13 @@ struct LinkedList<T> {
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Default for LinkedList<T> {
+impl<T: Ord> Default for LinkedList<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T: Ord> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -72,11 +72,32 @@ impl<T> LinkedList<T> {
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
 	{
 		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+        let mut result = Self::new();
+        let mut a_node = list_a.start;
+        let mut b_node = list_b.start;
+        while let (Some(a), Some(b)) = (a_node, b_node){
+            let a = unsafe{ std::ptr::read(&(*a_node.expect("err").as_ref()).val) };
+            let b = unsafe{ std::ptr::read(&(*b_node.expect("err").as_ref()).val) };
+            if a < b {
+                result.add(a);
+                a_node = unsafe{ (*a_node.expect("err").as_ptr()).next };
+            }else
+            {
+                result.add(b);
+                b_node = unsafe{ (*b_node.expect("err").as_ptr()).next };
+            }
         }
+        while let Some(a) = a_node {
+            let a = unsafe{ std::ptr::read(&(*a_node.expect("err").as_ref()).val) };
+            result.add(a);
+            a_node = unsafe{ (*a_node.expect("err").as_ptr()).next };
+        }
+        while let Some(b) = b_node {
+            let b = unsafe{ std::ptr::read(&(*b_node.expect("err").as_ref()).val) };
+            result.add(b);
+            b_node = unsafe{ (*b_node.expect("err").as_ptr()).next };
+        }
+		result
 	}
 }
 
