@@ -8,7 +8,7 @@ use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
 use std::vec::*;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 struct Node<T> {
     val: T,
     next: Option<NonNull<Node<T>>>,
@@ -31,13 +31,13 @@ struct LinkedList<T> {
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Default for LinkedList<T> {
+impl<T: Clone> Default for LinkedList<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T: Clone> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -74,6 +74,20 @@ impl<T> LinkedList<T> {
     }
 	pub fn reverse(&mut self){
 		// TODO
+        let mut index:i32 = (self.length - 1) as i32;
+        let mut node = self.end;
+        let last_node = self.end;
+        while index >= 0 {
+            if let Some(ptr) = node {
+                self.add(unsafe{ (*ptr.as_ptr()).val.clone() });
+            }
+            node = unsafe { (*node.unwrap().as_ptr()).prev };
+            index = index - 1;
+        }
+        let mut last = unsafe{ (*last_node.unwrap().as_ptr()).next};
+        unsafe{
+            self.start = last;
+        };
 	}
 }
 
