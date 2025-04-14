@@ -2,7 +2,7 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
+
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -37,7 +37,27 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        self.count += 1;
+        if self.items.len() < self.count + 1 {//为什么不用capacity而用len
+            self.items.push(value);
+            println!("aa");
+        }else
+        {
+            self.items[self.count] = value;//不能只用push   
+            println!("bb");         
+        }
+
+        let mut present_idx = self.count;
+        let mut parent_idx = self.parent_idx(self.count);
+        let mut parent = &self.items[parent_idx];
+        let mut present = &self.items[present_idx];
+        while parent_idx > 0 && (self.comparator)(present, parent) {
+            self.items.swap(parent_idx, present_idx);
+            present_idx = parent_idx;
+            parent_idx = self.parent_idx(present_idx);
+            present = &self.items[present_idx];
+            parent = &self.items[parent_idx];
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,8 +77,24 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+        if !self.children_present(idx) {
+            10000
+        }
+        else if idx * 2 + 1 > self.count {
+            self.left_child_idx(idx)
+        }
+        else
+        {
+            let child1 = &self.items[self.left_child_idx(idx)];
+            let child2 = &self.items[self.right_child_idx(idx)];
+            if (self.comparator)(child1, child2) {
+                self.left_child_idx(idx) 
+            } 
+            else{
+                self.right_child_idx(idx)               
+            }
+
+        }
     }
 }
 
@@ -77,15 +113,40 @@ where
     }
 }
 
-impl<T> Iterator for Heap<T>
+impl<T: Clone> Iterator for Heap<T>
 where
     T: Default,
 {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.count == 0 {
+            return None
+        }
+        else
+        {
+            let ret = self.items[1].clone();
+            self.items.swap(1, self.count);            
+            self.count -= 1;
+            let mut present_idx = 1;
+            if !self.children_present(present_idx){
+                return Some(ret);
+            }
+            let mut child_idx = self.smallest_child_idx(present_idx);
+            let mut present = &self.items[present_idx];
+            let mut child = &self.items[child_idx];
+            while (self.comparator)(child, present) {
+                self.items.swap(present_idx, child_idx);
+                present_idx = child_idx;
+                if !self.children_present(present_idx) {
+                    break;
+                }
+                child_idx = self.smallest_child_idx(present_idx);
+                present = &self.items[present_idx];
+                child = &self.items[child_idx];
+            }
+            Some(ret)
+        }
     }
 }
 
